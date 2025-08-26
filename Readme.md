@@ -21,10 +21,13 @@ This Arduino-based program is designed for use with the **ZES ZSOM-M01** and the
 4. A **"SEL detected!"** message will appear on the Serial Monitor.  
 5. Press the button again to reset it before generating another SEL event.
 
+The above steps can be done on GUI as well instead of launching/using the Arduino IDE.
+
 ---
 
 ## 📁 Repository Contents
 
+- `GUI` — GUI executable file
 - `SEL_Detection/` — Arduino sketch files  
 - `images/` — Board images (ZES ZSOM-M01 + ZSOM-M01-NS01A evaluation board)  
 - `README.md` — This documentation  
