@@ -85,3 +85,27 @@ unsigned int FRAMRead32(int CS_pin, int address, int N_BYTE ) {
   
 }
 
+int ADC_READ(int CS_pin, uint8_t address)   // SPI read func for ADC
+{
+  int temp_data1, temp_data2;
+  int temp_data=0;
+  address = 4;
+  //Serial.print("\n address = " + String(temp_data1));
+  
+  digitalWrite(CS_pin, LOW); 
+  myusdelay(1);
+  temp_data1 = SPI.transfer(0x04);
+  temp_data2 = SPI.transfer(0x00);
+  myusdelay(1);
+  digitalWrite(CS_pin, HIGH); 
+
+  //Serial.print("\n temp_data1 = " + String(temp_data1));
+  //Serial.print("\n temp_data2 = " + String(temp_data2));
+
+  temp_data = temp_data + ((temp_data1) << 8); //update 3rd MSB byte of error counter
+  
+  temp_data = temp_data + temp_data2; //update LSB byte of error counter  
+
+  return temp_data;
+
+}

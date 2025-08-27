@@ -23,6 +23,7 @@ int temp_tm = 0;
 
 unsigned long current_time  = 0; // To check current time
 unsigned long prev_time  = 0; // To check current time
+unsigned long start_time  = 0; // To check current time
 unsigned long time_diff  = 0; // To check current time
 unsigned long last_trg  = 0;
 unsigned long current_trg = 0;
@@ -35,6 +36,9 @@ const int add_d = 3100;
 const int add_tm = 4100;
 //const int add_RST_RF_1 = 4100;  // FRAM addresses
 //const int add_RST_RF_2 = 5100;  // FRAM addresses
+
+bool startLoop = false;  // flag to control loop execution
+String inputString = ""; // a string to hold incoming serial data
 
 void FRAMWrite32(int CS_pin, int address, int value, int N_BYTE = 1);
 unsigned int FRAMRead32(int CS_pin, int address, int N_BYTE = 1 );
@@ -108,12 +112,42 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   
+  // Check for incoming serial data
+  if (Serial.available()) {
+    char inChar = (char)Serial.read();
+    inputString += inChar;
+
+    // If newline received, process the command
+    if (inChar == '\n') {
+      inputString.trim(); // remove \r or extra spaces
+
+      if (inputString == "status") {
+        //Serial.println("Command received. Starting loop actions...");
+        startLoop = true;
+        start_time = millis();
+        prev_time = start_time;
+        Serial.print ("\n Ready! \n"); 
+        Serial.print (start_time); 
+        
+      } else {
+        Serial.println("Unknown command: " + inputString);
+      }
+
+      inputString = ""; // clear for next command
+    }
+  }
+
+  if (startLoop) {
   current_time =  millis();
-  time_diff = current_time - prev_time;
-  if (time_diff > 60000)
+  time_diff = current_time - prev_time ;
+ // Serial.print ("\n");   
+ // Serial.print (time_diff); 
+  if (time_diff > 10000)
   {
-    Serial.print ("\n"); 
-    Serial.print (current_time); 
+    
+    Serial.print ("\n Runtime:"); 
+    int rounded_current_time = round((current_time - start_time)/1000);
+    Serial.print (rounded_current_time); 
     Serial.print ("\n"); 
     prev_time = current_time;
     ADC_data_fetch ();
@@ -163,17 +197,34 @@ void loop() {
 
   }
  
-    
+  }
 
     
 }
 
 void ADC_data_fetch (){
 
-  Serial.print ("\n Fetching data from ADC! \n"); 
-  
+  uint8_t address = 0;
+  int result = 0;
+  int err_count = 0;
+  Serial.print ("\n Fetching data from ADC! \n"); // for debug
+
+  SPI.beginTransaction(mySetting); 
+
+  result = ADC_READ(CS_ADC, address);
+  SPI.endTransaction();  
+
+  Serial.println(); // for debug
+  Serial.print("\n ADC result = " + String(result) + "\n"); // for debug
   //RD_ADC(); 
 
+  /*
+  SPI.beginTransaction(mySetting);
+  err_count = FRAMRead32( CS_FRAM, add_adc, 4); // reading previous counter value
+  FRAMWrite32( CS_FRAM, add_adc, err_count, 4);
+  FRAMWrite32( CS_FRAM, add_adc_last_data, result, 4);
+  SPI.endTransaction();
+  */
   return;
 }
 
